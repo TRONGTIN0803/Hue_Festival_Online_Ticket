@@ -1,4 +1,6 @@
 using Hue_Festival_Online_Ticket.Context;
+using Hue_Festival_Online_Ticket.IService;
+using Hue_Festival_Online_Ticket.Service;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,8 +19,12 @@ builder.Services.AddDbContext<Hue_Festival_Context>(opt =>
 
 }
 
-); ;
+);
+//register service
+builder.Services.AddScoped<IChuongtrinhService, ChuongtrinhService>();
+builder.Services.AddScoped<IDiadiemService, DiadiemService>();
 
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

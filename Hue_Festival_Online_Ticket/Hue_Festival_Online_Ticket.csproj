@@ -23,11 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="IService\" />
-    <Folder Include="Mapper\" />
-    <Folder Include="Model\Response\" />
     <Folder Include="Model\Request\" />
-    <Folder Include="Service\" />
   </ItemGroup>
 
 </Project>
