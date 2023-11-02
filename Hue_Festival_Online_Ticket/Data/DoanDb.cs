@@ -11,6 +11,6 @@ namespace Hue_Festival_Online_Ticket.Data
         public int ID_doan { get; set; }
         public string? Nhom_doan { get; set; }
 
-        public virtual List<LichDienDb>? list_Lichdien { get; set; }
+        public virtual List<ChuongTrinhDb>? list_Chuongtrinh { get; set; }
     }
 }
