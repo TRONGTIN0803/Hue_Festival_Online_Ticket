@@ -18,7 +18,6 @@ namespace Hue_Festival_Online_Ticket.Context
         public DbSet<DoanDb> doanDbs { get; set; }
         public DbSet<HoTroDb> hoTroDbs { get; set; }
         public DbSet<HoTroUserDb> hoTroUserDbs { get; set; }
-        public DbSet<LichDienDb> lichDienDbs { get; set; }
         public DbSet<MenuDb> menuDbs { get; set; }
         public DbSet<NhomDb> nhomDbs { get; set; }
         public DbSet<SubMenuDb> subMenuDbs { get; set; }
@@ -27,6 +26,7 @@ namespace Hue_Festival_Online_Ticket.Context
         public DbSet<TinTucYeuThichDb> tinTucYeuThichDbs { get; set; }
         public DbSet<UserDb> userDbs { get; set; }
         public DbSet<VeDb> veDbs { get; set; }
+        public DbSet<DiaDiemYeuThichDb> diaDiemYeuThichDbs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -158,31 +158,42 @@ namespace Hue_Festival_Online_Ticket.Context
                         .HasConstraintName("FK_SubMenuDb_Menu");
 
             });
-            modelBuilder.Entity<LichDienDb>(entity => {
-
-                entity.HasOne(e => e.Chuongtrinh)
-                        .WithMany(ct => ct.list_Lichdien)
-                        .HasForeignKey("Chuongtrinh_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .HasConstraintName("FK_LichDienDb_Chuongtrinh");
-
-            });
-            modelBuilder.Entity<LichDienDb>(entity => {
+            modelBuilder.Entity<ChuongTrinhDb>(entity => {
 
                 entity.HasOne(e => e.Nhom)
-                        .WithMany(n => n.list_Lichdien)
+                        .WithMany(n => n.list_Chuongtrinh)
                         .HasForeignKey("Nhom_id")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .HasConstraintName("FK_LichDienDb_Nhom");
+                        .HasConstraintName("FK_ChuongTrinhDb_Nhom");
 
             });
-            modelBuilder.Entity<LichDienDb>(entity => {
+            modelBuilder.Entity<ChuongTrinhDb>(entity => {
 
                 entity.HasOne(e => e.Doan)
-                        .WithMany(d => d.list_Lichdien)
+                        .WithMany(d => d.list_Chuongtrinh)
                         .HasForeignKey("Doan_id")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .HasConstraintName("FK_LichDienDb_Doan");
+                        .HasConstraintName("FK_ChuongTrinhDb_Doan");
+
+            });
+            modelBuilder.Entity<DiaDiemYeuThichDb>(entity =>
+            {
+
+                entity.HasOne(e => e.Diadiem)
+                        .WithMany(dd => dd.list_Diadiemyeuthich)
+                        .HasForeignKey("Diadiem_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("FK_DiaDiemYeuThichDb_Diadiem");
+
+            });
+            modelBuilder.Entity<DiaDiemYeuThichDb>(entity =>
+            {
+
+                entity.HasOne(e => e.User)
+                        .WithMany(user => user.list_Diadiemyeuthich)
+                        .HasForeignKey("User_id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("FK_DiaDiemYeuThichDb_User");
 
             });
         }

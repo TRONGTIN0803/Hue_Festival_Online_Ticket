@@ -18,5 +18,6 @@ namespace Hue_Festival_Online_Ticket.Data
         public virtual List<TinTucYeuThichDb>? list_TintucYeuthich { get; set; }
         public virtual List<ChuongTrinhYeuThichDb>? list_ChuongtrinhYeuthich { get; set; }
         public virtual List<VeDb>? list_Ve { get; set; }
+        public virtual List<DiaDiemYeuThichDb>? list_Diadiemyeuthich { get; set; }
     }
 }
