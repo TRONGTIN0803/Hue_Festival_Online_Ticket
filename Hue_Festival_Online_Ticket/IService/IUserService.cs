@@ -15,6 +15,8 @@ namespace Hue_Festival_Online_Ticket.IService
         Task<KqJson> loginUser(DangNhapRequestDTO model);
         Task<KqJson> register(DangkyRequestDTO model);
         Task<KqJson> bookTicketHistory(int user_id);
-        Task<KqJson> historyCheckInTicketlist(int user_id);
+        Task<ResultCheckinTicket> historyCheckInTicketlist(int user_id, string date, int type, int chuongtrinh_id);
+        Task<KqJson> changePassword(ChangePasswordRequestDTO model);
+        Task<KqJson> resetPassword(ResetPasswordRequestDTO model);
     }
 }

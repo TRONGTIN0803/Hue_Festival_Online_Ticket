@@ -32,5 +32,28 @@ namespace Hue_Festival_Online_Ticket.Controllers
         {
             return Ok(await _tintucService.changeWishTintuc(model));
         }
+
+        [HttpPost("add_news")]
+        public async Task<IActionResult>addNews(TintucRequestDTO model)
+        {
+            return Ok(await _tintucService.addNews(model));
+        }
+
+        [HttpPut("edit_news")]
+        public async Task<IActionResult>editNews(TintucRequestDTO model)
+        {
+            return Ok(await _tintucService.editNews(model));
+        }
+
+        [HttpDelete("delete_news")]
+        public async Task<IActionResult>deleteNews(DeleteEntityRequestDTO model)
+        {
+            return Ok(await _tintucService.deleteNews(model));
+        }
+        [HttpPost("add_image")]
+        public async Task<IActionResult>addImage(AddImageRequestDTO model)
+        {
+            return Ok(await _tintucService.addImage(model));
+        }
     }
 }

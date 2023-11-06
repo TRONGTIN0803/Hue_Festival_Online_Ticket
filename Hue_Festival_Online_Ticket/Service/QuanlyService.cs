@@ -118,13 +118,14 @@ namespace Hue_Festival_Online_Ticket.Service
             }
         }
 
-        public async Task<KqJson> getThongkeTicket(string date, int type, int chuongtrinh_id)
+        public async Task<ResultThongke> getThongkeTicket(string date, int type, int chuongtrinh_id)
         {
-            KqJson kq = new KqJson();
+            ResultThongke kq = new ResultThongke();
             try
             {
                 if (date != "")
                 {
+                    int? total_amount = 0;
                     DateTime ngay;
                     if (DateTime.TryParseExact(date, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out ngay))
                     {
@@ -166,7 +167,7 @@ namespace Hue_Festival_Online_Ticket.Service
                             {
                                 CountTicket = await (from ve in _context.veDbs
                                                      where ve.Date_soatve.ToString().StartsWith(date) &&
-                                                     ve.Chuongtrinh_id==chuongtrinh_id
+                                                     ve.Chuongtrinh_id == chuongtrinh_id
                                                      group ve by ve.Chuongtrinh_id into idve
                                                      select new ThongkeTicketResponseDTO
                                                      {
@@ -179,13 +180,13 @@ namespace Hue_Festival_Online_Ticket.Service
                                 throw new Exception("ID chương trình không hợp lệ");
                             }
                         }
-                        else if(type>0 && chuongtrinh_id > 0)
+                        else if (type > 0 && chuongtrinh_id > 0)
                         {
                             if (type == 1 || type == 2)
                             {
                                 CountTicket = await (from ve in _context.veDbs
                                                      where ve.Date_soatve.ToString().StartsWith(date) &&
-                                                     ve.Type == type && ve.Chuongtrinh_id==chuongtrinh_id
+                                                     ve.Type == type && ve.Chuongtrinh_id == chuongtrinh_id
                                                      group ve by ve.Chuongtrinh_id into idve
                                                      select new ThongkeTicketResponseDTO
                                                      {
@@ -198,7 +199,7 @@ namespace Hue_Festival_Online_Ticket.Service
                                 throw new Exception("Loại vé không hợp lệ");
                             }
                         }
-                        else if(type<0 && chuongtrinh_id < 0)
+                        else if (type < 0 && chuongtrinh_id < 0)
                         {
                             throw new Exception("Loại vé và ID chương trình không hợp lệ");
                         }
@@ -211,14 +212,21 @@ namespace Hue_Festival_Online_Ticket.Service
                         {
                             foreach (var ve in CountTicket)
                             {
-                                var ct_name = await (from ct in _context.chuongTrinhDbs
-                                                     where ct.ID_chuongtrinh == ve.Chuongtrinh_id
-                                                     select ct.Chuongtrinh_name).SingleOrDefaultAsync();
-                                ve.Chuongtrinh_name = ct_name;
+                                var ct = await (from p in _context.chuongTrinhDbs
+                                                     where p.ID_chuongtrinh == ve.Chuongtrinh_id
+                                                     select new
+                                                     {
+                                                         name=p.Chuongtrinh_name,
+                                                         price=p.Price
+                                                     }).SingleOrDefaultAsync();
+                                ve.Chuongtrinh_name = ct.name;
+                                ve.total_price = ct.price*ve.Quantity_ticket;
+                                total_amount += ve.total_price;
                             }
                             kq.status = true;
                             kq.msg = "Thanh cong";
-                            kq.data = CountTicket;
+                            kq.total_amount = total_amount;
+                            kq.list_program = CountTicket;
                             return kq;
                         }
                         else
@@ -244,14 +252,19 @@ namespace Hue_Festival_Online_Ticket.Service
             }
         }
 
-        public async Task<KqJson> historyCheckInTicketList(int nguoisoat_id)
+        public async Task<ResultCheckinTicket> historyCheckInTicketList(int nguoisoat_id, string date, int type, int chuongtrinh_id)
         {
-            KqJson kq = new KqJson();
+            ResultCheckinTicket kq = new ResultCheckinTicket();
             try
             {
                 if (nguoisoat_id > 0)
                 {
-                    var result = await (from ve in _context.veDbs
+                    int Count=0;
+                    DateTime ngay;
+                    List<HistoryCheckInTicketNVResponseDTO> result = new List<HistoryCheckInTicketNVResponseDTO>();
+                    if (date == null && type == 0 && chuongtrinh_id == 0)
+                    {
+                        result = await (from ve in _context.veDbs
                                         join u in _context.userDbs
                                         on ve.User_id equals u.ID_user
                                         join ct in _context.chuongTrinhDbs
@@ -273,8 +286,277 @@ namespace Hue_Festival_Online_Ticket.Service
                                             Date_soatve = ve.Date_soatve,
                                             Status = ve.Status + ""
                                         }).ToListAsync();
+                    }
+                    else if (date != null && type == 0 && chuongtrinh_id == 0)
+                    {
+                        if (DateTime.TryParseExact(date, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out ngay))
+                        {
+                            result = await (from ve in _context.veDbs
+                                            join u in _context.userDbs
+                                            on ve.User_id equals u.ID_user
+                                            join ct in _context.chuongTrinhDbs
+                                            on ve.Chuongtrinh_id equals ct.ID_chuongtrinh
+                                            join dd in _context.diaDiemDbs
+                                            on ct.Diadiem_id equals dd.ID_diadiem
+                                            where ve.NV_soatve == nguoisoat_id && ve.Date_soatve.ToString().StartsWith(date)
+                                            orderby ve.Date_soatve descending
+                                            select new HistoryCheckInTicketNVResponseDTO
+                                            {
+                                                ID_ve = ve.ID_ve,
+                                                Type = ve.Type + "",
+                                                Nguoidat_name = u.User_name,
+                                                Chuongtrinh_name = ct.Chuongtrinh_name,
+                                                Price = ct.Price + "",
+                                                Time = ct.Time,
+                                                Program_start_date = ct.Fdate,
+                                                Diadiem = dd.Diadiem_title,
+                                                Date_soatve = ve.Date_soatve,
+                                                Status = ve.Status + ""
+                                            }).ToListAsync();
+                        }
+                        else
+                        {
+                            throw new Exception("Định dạng thời gian không phù hợp, 'yyyy-MM'");
+                        }
+                    }
+                    else if (date == null && type != 0 && chuongtrinh_id == 0)
+                    {
+                        if (type == 1 || type == 2)
+                        {
+                            result = await (from ve in _context.veDbs
+                                            join u in _context.userDbs
+                                            on ve.User_id equals u.ID_user
+                                            join ct in _context.chuongTrinhDbs
+                                            on ve.Chuongtrinh_id equals ct.ID_chuongtrinh
+                                            join dd in _context.diaDiemDbs
+                                            on ct.Diadiem_id equals dd.ID_diadiem
+                                            where ve.NV_soatve == nguoisoat_id && ve.Type == type
+                                            orderby ve.Date_soatve descending
+                                            select new HistoryCheckInTicketNVResponseDTO
+                                            {
+                                                ID_ve = ve.ID_ve,
+                                                Type = ve.Type + "",
+                                                Nguoidat_name = u.User_name,
+                                                Chuongtrinh_name = ct.Chuongtrinh_name,
+                                                Price = ct.Price + "",
+                                                Time = ct.Time,
+                                                Program_start_date = ct.Fdate,
+                                                Diadiem = dd.Diadiem_title,
+                                                Date_soatve = ve.Date_soatve,
+                                                Status = ve.Status + ""
+                                            }).ToListAsync();
+                        }
+                        else
+                        {
+                            throw new Exception("Loại vé không phù hợp");
+                        }
+                    }
+                    else if (date == null && type <= 0 && chuongtrinh_id != 0)
+                    {
+                        if (chuongtrinh_id > 0)
+                        {
+                            result = await (from ve in _context.veDbs
+                                            join u in _context.userDbs
+                                            on ve.User_id equals u.ID_user
+                                            join ct in _context.chuongTrinhDbs
+                                            on ve.Chuongtrinh_id equals ct.ID_chuongtrinh
+                                            join dd in _context.diaDiemDbs
+                                            on ct.Diadiem_id equals dd.ID_diadiem
+                                            where ve.NV_soatve == nguoisoat_id && ve.Chuongtrinh_id == chuongtrinh_id
+                                            orderby ve.Date_soatve descending
+                                            select new HistoryCheckInTicketNVResponseDTO
+                                            {
+                                                ID_ve = ve.ID_ve,
+                                                Type = ve.Type + "",
+                                                Nguoidat_name = u.User_name,
+                                                Chuongtrinh_name = ct.Chuongtrinh_name,
+                                                Price = ct.Price + "",
+                                                Time = ct.Time,
+                                                Program_start_date = ct.Fdate,
+                                                Diadiem = dd.Diadiem_title,
+                                                Date_soatve = ve.Date_soatve,
+                                                Status = ve.Status + ""
+                                            }).ToListAsync();
+                        }
+                        else
+                        {
+                            throw new Exception("ID chương trình không phù hợp");
+                        }
+                    }
+                    else if (date != null && type != 0 && chuongtrinh_id != 0)
+                    {
+                        if (DateTime.TryParseExact(date, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out ngay))
+                        {
+                            if (type == 1 || type == 2)
+                            {
+                                if (chuongtrinh_id > 0)
+                                {
+                                    result = await (from ve in _context.veDbs
+                                                    join u in _context.userDbs
+                                                    on ve.User_id equals u.ID_user
+                                                    join ct in _context.chuongTrinhDbs
+                                                    on ve.Chuongtrinh_id equals ct.ID_chuongtrinh
+                                                    join dd in _context.diaDiemDbs
+                                                    on ct.Diadiem_id equals dd.ID_diadiem
+                                                    where ve.NV_soatve == nguoisoat_id && 
+                                                    ve.Type == type && ve.Chuongtrinh_id == chuongtrinh_id &&
+                                                    ve.Date_soatve.ToString().StartsWith(date)
+                                                    orderby ve.Date_soatve descending
+                                                    select new HistoryCheckInTicketNVResponseDTO
+                                                    {
+                                                        ID_ve = ve.ID_ve,
+                                                        Type = ve.Type + "",
+                                                        Nguoidat_name = u.User_name,
+                                                        Chuongtrinh_name = ct.Chuongtrinh_name,
+                                                        Price = ct.Price + "",
+                                                        Time = ct.Time,
+                                                        Program_start_date = ct.Fdate,
+                                                        Diadiem = dd.Diadiem_title,
+                                                        Date_soatve = ve.Date_soatve,
+                                                        Status = ve.Status + ""
+                                                    }).ToListAsync();
+                                }
+                                else
+                                {
+                                    throw new Exception("ID chương trình không phù hợp");
+                                }
+
+                            }
+                            else
+                            {
+                                throw new Exception("Loại vé không hợp lệ");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Định dạng thời gian không phù hợp, 'yyyy-MM'");
+                        }
+                    }
+                    else if (date != null && type != 0 && chuongtrinh_id == 0)
+                    {
+                        if (DateTime.TryParseExact(date, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out ngay))
+                        {
+                            if (type == 1 || type == 2)
+                            {
+                                result = await (from ve in _context.veDbs
+                                                join u in _context.userDbs
+                                                on ve.User_id equals u.ID_user
+                                                join ct in _context.chuongTrinhDbs
+                                                on ve.Chuongtrinh_id equals ct.ID_chuongtrinh
+                                                join dd in _context.diaDiemDbs
+                                                on ct.Diadiem_id equals dd.ID_diadiem
+                                                where ve.NV_soatve == nguoisoat_id && ve.Type == type && ve.Date_soatve.ToString().StartsWith(date)
+                                                orderby ve.Date_soatve descending
+                                                select new HistoryCheckInTicketNVResponseDTO
+                                                {
+                                                    ID_ve = ve.ID_ve,
+                                                    Type = ve.Type + "",
+                                                    Nguoidat_name = u.User_name,
+                                                    Chuongtrinh_name = ct.Chuongtrinh_name,
+                                                    Price = ct.Price + "",
+                                                    Time = ct.Time,
+                                                    Program_start_date = ct.Fdate,
+                                                    Diadiem = dd.Diadiem_title,
+                                                    Date_soatve = ve.Date_soatve,
+                                                    Status = ve.Status + ""
+                                                }).ToListAsync();
+                            }
+                            else
+                            {
+                                throw new Exception("Loại vé không hợp lệ");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Định dạng thời gian không phù hợp, 'yyyy-MM'");
+                        }
+                    }
+                    else if (date != null && type == 0 && chuongtrinh_id != 0)
+                    {
+                        if (DateTime.TryParseExact(date, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out ngay))
+                        {
+                            if (chuongtrinh_id>0)
+                            {
+                                result = await (from ve in _context.veDbs
+                                                join u in _context.userDbs
+                                                on ve.User_id equals u.ID_user
+                                                join ct in _context.chuongTrinhDbs
+                                                on ve.Chuongtrinh_id equals ct.ID_chuongtrinh
+                                                join dd in _context.diaDiemDbs
+                                                on ct.Diadiem_id equals dd.ID_diadiem
+                                                where ve.NV_soatve == nguoisoat_id && ve.Chuongtrinh_id == chuongtrinh_id && ve.Date_soatve.ToString().StartsWith(date)
+                                                orderby ve.Date_soatve descending
+                                                select new HistoryCheckInTicketNVResponseDTO
+                                                {
+                                                    ID_ve = ve.ID_ve,
+                                                    Type = ve.Type + "",
+                                                    Nguoidat_name = u.User_name,
+                                                    Chuongtrinh_name = ct.Chuongtrinh_name,
+                                                    Price = ct.Price + "",
+                                                    Time = ct.Time,
+                                                    Program_start_date = ct.Fdate,
+                                                    Diadiem = dd.Diadiem_title,
+                                                    Date_soatve = ve.Date_soatve,
+                                                    Status = ve.Status + ""
+                                                }).ToListAsync();
+                            }
+                            else
+                            {
+                                throw new Exception("ID chương trình không phù hợp");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Định dạng thời gian không phù hợp, 'yyyy-MM'");
+                        }
+                    }
+                    else if (date == null && type != 0 && chuongtrinh_id != 0)
+                    {
+                        if (type ==1||type==2)
+                        {
+                            if (chuongtrinh_id > 0)
+                            {
+                                result = await (from ve in _context.veDbs
+                                                join u in _context.userDbs
+                                                on ve.User_id equals u.ID_user
+                                                join ct in _context.chuongTrinhDbs
+                                                on ve.Chuongtrinh_id equals ct.ID_chuongtrinh
+                                                join dd in _context.diaDiemDbs
+                                                on ct.Diadiem_id equals dd.ID_diadiem
+                                                where ve.NV_soatve == nguoisoat_id && ve.Type == type && ve.Chuongtrinh_id==chuongtrinh_id
+                                                orderby ve.Date_soatve descending
+                                                select new HistoryCheckInTicketNVResponseDTO
+                                                {
+                                                    ID_ve = ve.ID_ve,
+                                                    Type = ve.Type + "",
+                                                    Nguoidat_name = u.User_name,
+                                                    Chuongtrinh_name = ct.Chuongtrinh_name,
+                                                    Price = ct.Price + "",
+                                                    Time = ct.Time,
+                                                    Program_start_date = ct.Fdate,
+                                                    Diadiem = dd.Diadiem_title,
+                                                    Date_soatve = ve.Date_soatve,
+                                                    Status = ve.Status + ""
+                                                }).ToListAsync();
+                            }
+                            else
+                            {
+                                throw new Exception("ID chương trình không phù hợp");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Loại vé không hợp lệ");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Du lieu dau vao khong phu hop");
+                    }
+
                     if (result.Count > 0)
                     {
+                        Count = result.Count;
                         foreach (var item in result)
                         {
                             if (item.Price == "0")
@@ -300,7 +582,8 @@ namespace Hue_Festival_Online_Ticket.Service
                         }
                         kq.status = true;
                         kq.msg = "Thanh cong";
-                        kq.data = result;
+                        kq.quantity_ticket = Count;
+                        kq.list_ticket = result;
                         return kq;
                     }
                     else

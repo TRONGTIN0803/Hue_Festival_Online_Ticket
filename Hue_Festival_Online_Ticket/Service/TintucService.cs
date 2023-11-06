@@ -19,6 +19,104 @@ namespace Hue_Festival_Online_Ticket.Service
             _mapper = mapper;
         }
 
+        public async Task<KqJson> addImage(AddImageRequestDTO model)
+        {
+            KqJson kq = new KqJson();
+            try
+            {
+                if (model != null)
+                {
+                    if(model.Entity_id>0)
+                    {
+                        if (model.List_pathimage.Count > 0)
+                        {
+                            List<TinTucImageDb> list_img = new List<TinTucImageDb>();
+                            foreach(var image in model.List_pathimage)
+                            {
+                                TinTucImageDb img = new TinTucImageDb();
+                                img.Image_path = image;
+                                img.Tintuc_id = model.Entity_id;
+                                list_img.Add(img);
+                            }
+                            await _context.tinTucImageDbs.AddRangeAsync(list_img);
+                            int row = await _context.SaveChangesAsync();
+                            if (row > 0)
+                            {
+                                kq.status = true;
+                                kq.msg = "Add Succesfully";
+                                return kq;
+                            }
+                            else
+                            {
+                                throw new Exception("Add Failed");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Phải có ít nhất 1 ảnh");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("ID không phù hợp");
+                    }
+                }
+                else
+                {
+                    throw new Exception("Bad request");
+                }
+            }catch(Exception e)
+            {
+                kq.status = false;
+                kq.msg = e.Message;
+                return kq;
+            }
+        }
+
+        public async Task<KqJson> addNews(TintucRequestDTO model)
+        {
+            KqJson kq = new KqJson();
+            try
+            {
+                if (model != null)
+                {
+                    if(model.Tintuc_title!=null && model.Tintuc_content != null)
+                    {
+                        TinTucDb tintuc = new TinTucDb();
+                        tintuc.Tintuc_title = model.Tintuc_title;
+                        tintuc.Tintuc_content = model.Tintuc_content;
+                        tintuc.Tintuc_time = DateTime.Now;
+
+                        await _context.tinTucDbs.AddAsync(tintuc);
+                        int row = await _context.SaveChangesAsync();
+                        if (row > 0)
+                        {
+                            kq.status = true;
+                            kq.msg = "Add Successfully";
+                            return kq;
+                        }
+                        else
+                        {
+                            throw new Exception("Add Failed");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Dữ liệu không được để trống");
+                    }
+                }
+                else
+                {
+                    throw new Exception("Bad request");
+                }
+            }catch(Exception e)
+            {
+                kq.status = false;
+                kq.msg = e.Message;
+                return kq;
+            }
+        }
+
         public async Task<KqJson> changeWishTintuc(YeuthichRequestDTO model)
         {
             KqJson kq = new KqJson();
@@ -72,6 +170,103 @@ namespace Hue_Festival_Online_Ticket.Service
                 }
             }
             catch (Exception e)
+            {
+                kq.status = false;
+                kq.msg = e.Message;
+                return kq;
+            }
+        }
+
+        public async Task<KqJson> deleteNews(DeleteEntityRequestDTO model)
+        {
+            KqJson kq = new KqJson();
+            try
+            {
+                if (model != null)
+                {
+                    if (model.Id > 0)
+                    {
+                        var resulrt = await _context.tinTucDbs.SingleOrDefaultAsync(p => p.ID_tintuc == model.Id);
+                        if (resulrt != null)
+                        {
+                            _context.Remove(resulrt);
+                            int row = await _context.SaveChangesAsync();
+                            if (row > 0)
+                            {
+                                kq.status = true;
+                                kq.msg = "Delete Successfully";
+                                return kq;
+                            }
+                            else
+                            {
+                                throw new Exception("Delete Failed");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Not found");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Find Error");
+                    }
+                }
+                else
+                {
+                    throw new Exception("Bad request");
+                }
+            }catch(Exception e)
+            {
+                kq.status = false;
+                kq.msg = e.Message;
+                return kq;
+            }
+        }
+
+        public async Task<KqJson> editNews(TintucRequestDTO model)
+        {
+            KqJson kq = new KqJson();
+            try
+            {
+                if(model != null)
+                {
+                    if (model.ID_tintuc > 0)
+                    {
+                        var result = await _context.tinTucDbs.SingleOrDefaultAsync(p => p.ID_tintuc == model.ID_tintuc);
+                        if (result != null)
+                        {
+                            result.Tintuc_title = model.Tintuc_title != null ? model.Tintuc_title : result.Tintuc_title;
+                            result.Tintuc_content = model.Tintuc_content != null ? model.Tintuc_content : result.Tintuc_content;
+                            result.Tintuc_time = DateTime.Now;
+
+                            int row = await _context.SaveChangesAsync();
+                            if (row > 0)
+                            {
+                                kq.status = true;
+                                kq.msg = "Edit Successfully";
+                                return kq;
+                            }
+                            else
+                            {
+                                throw new Exception("Edit Failed");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception("Not found");
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("Find Error");
+                    }
+                }
+                else
+                {
+                    throw new Exception("Bad request");
+                }
+            }catch(Exception e)
             {
                 kq.status = false;
                 kq.msg = e.Message;

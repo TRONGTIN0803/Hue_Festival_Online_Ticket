@@ -8,7 +8,7 @@ namespace Hue_Festival_Online_Ticket.IService
         Task<KqJson> loginAdmin(DangNhapRequestDTO model);
         Task<KqJson> checkInfoTicket(int ve_id);
         Task<KqJson> checkInTicket(CheckInTicketRequestDTO model);
-        Task<KqJson> historyCheckInTicketList(int nguoisoat_id);
-        Task<KqJson> getThongkeTicket(string date, int type, int chuongtrinh_id);
+        Task<ResultCheckinTicket> historyCheckInTicketList(int nguoisoat_id,string date,int type,int chuongtrinh_id);
+        Task<ResultThongke> getThongkeTicket(string date, int type, int chuongtrinh_id);
     }
 }

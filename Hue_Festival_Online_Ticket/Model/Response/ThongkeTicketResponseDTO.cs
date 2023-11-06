@@ -5,5 +5,6 @@
         public int? Chuongtrinh_id { get; set; }
         public string? Chuongtrinh_name { get; set; }
         public int? Quantity_ticket { get; set; }
+        public int? total_price { get; set; }
     }
 }

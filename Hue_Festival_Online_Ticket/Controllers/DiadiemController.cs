@@ -20,6 +20,42 @@ namespace Hue_Festival_Online_Ticket.Controllers
             return Ok(await _service.getMenuList());
         }
 
+        [HttpPost("add_menu")]
+        public async Task<IActionResult>addMenu(MenuRequestDTO model)
+        {
+            return Ok(await _service.addMenu(model));
+        }
+
+        [HttpPut("edit_menu")]
+        public async Task<IActionResult> editMenu(MenuRequestDTO model)
+        {
+            return Ok(await _service.editMenu(model));
+        }
+
+        [HttpDelete("delete_menu")]
+        public async Task<IActionResult>deleteMenu(DeleteEntityRequestDTO model)
+        {
+            return Ok(await _service.deleteMenu(model));
+        }
+
+        [HttpPost("add_submenu")]
+        public async Task<IActionResult> addSubMenu(SubMenuRequestDTO model)
+        {
+            return Ok(await _service.addSubMenu(model));
+        }
+
+        [HttpPut("edit_submenu")]
+        public async Task<IActionResult> editSubMenu(SubMenuRequestDTO model)
+        {
+            return Ok(await _service.editSubmenu(model));
+        }
+
+        [HttpDelete("delete_submenu")]
+        public async Task<IActionResult> deleteSubMenu(DeleteEntityRequestDTO model)
+        {
+            return Ok(await _service.deleteSubMenu(model));
+        }
+
         [HttpGet("get_service_list")]
         public async Task<IActionResult>getServiceList(int submenu_id)
         {
@@ -54,6 +90,24 @@ namespace Hue_Festival_Online_Ticket.Controllers
         public async Task<IActionResult>buyTicket(AddVeRequestDTO model)
         {
             return Ok(await _service.addVe(model));
+        }
+
+        [HttpPost("add_location")]
+        public async Task<IActionResult>addLocation(DiadiemRequestDTO model)
+        {
+            return Ok(await _service.addDiadiem(model));
+        }
+
+        [HttpPut("edit_location")]
+        public async Task<IActionResult>editLocatin(DiadiemRequestDTO model)
+        {
+            return Ok(await _service.editDiadiem(model));
+        }
+
+        [HttpDelete("delete_location")]
+        public async Task<IActionResult> deleteLocation(DeleteEntityRequestDTO model)
+        {
+            return Ok(await _service.deleteDiadiem(model));
         }
 
     }

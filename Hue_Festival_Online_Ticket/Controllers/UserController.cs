@@ -49,10 +49,10 @@ namespace Hue_Festival_Online_Ticket.Controllers
             return Ok(await _userService.bookTicketHistory(user_id));
         }
 
-        [HttpGet("ticket/hostory_checkin_list")]
-        public async Task<IActionResult>historyCheckInList(int user_id)
+        [HttpGet("ticket/history_checkin_list")]
+        public async Task<IActionResult>historyCheckInList(int user_id, string date, int type, int chuongtrinh_id)
         {
-            return Ok(await _userService.historyCheckInTicketlist(user_id));
+            return Ok(await _userService.historyCheckInTicketlist(user_id,date,type,chuongtrinh_id));
         }
 
         [HttpPost("login")]
@@ -65,6 +65,18 @@ namespace Hue_Festival_Online_Ticket.Controllers
         public async Task<IActionResult>register(DangkyRequestDTO model)
         {
             return Ok(await _userService.register(model));
+        }
+
+        [HttpPut("change_password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequestDTO model)
+        {
+            return Ok(await _userService.changePassword(model));
+        }
+
+        [HttpPut("reset_password")]
+        public async Task<IActionResult>resetPassword(ResetPasswordRequestDTO model)
+        {
+            return Ok(await _userService.resetPassword(model));
         }
     }
 }

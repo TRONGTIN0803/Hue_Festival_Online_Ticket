@@ -22,6 +22,12 @@ namespace Hue_Festival_Online_Ticket.Controllers
             return Ok(await _chuongtrinhService.getProgramList(type_program));
         }
 
+        [HttpGet("get_history_program_list")]
+        public async Task<IActionResult> getHistoryProgramList()
+        {
+            return Ok(await _chuongtrinhService.historyProgram());
+        }
+
         [HttpGet("get_detail_program")]
         public async Task<IActionResult>getProgramDetail(int id_program)
         {
@@ -45,5 +51,29 @@ namespace Hue_Festival_Online_Ticket.Controllers
         {
             return Ok(await _chuongtrinhService.changeWishProgram(model));
         }
+
+        [HttpPut("edit_program")]
+        public async Task<IActionResult>editProgram(EditProgramRequestDTO model)
+        {
+            return Ok(await _chuongtrinhService.editProgram(model));
+        }
+
+        [HttpPost("add_program")]
+        public async Task<IActionResult>addProgram(EditProgramRequestDTO model)
+        {
+            return Ok(await _chuongtrinhService.addProgram(model));
+        }
+
+        [HttpDelete("delete_program")]
+        public async Task<IActionResult> deleteProgram(DeleteEntityRequestDTO model)
+        {
+            return Ok(await _chuongtrinhService.deleteProgram(model));
+        }
+        [HttpPost("add_image")]
+        public async Task<IActionResult> addImage(AddImageRequestDTO model)
+        {
+            return Ok(await _chuongtrinhService.addImage(model));
+        }
+
     }
 }

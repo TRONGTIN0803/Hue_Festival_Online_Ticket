@@ -34,9 +34,9 @@ namespace Hue_Festival_Online_Ticket.Controllers
         }
 
         [HttpGet("history_ticket_checkin_list")]
-        public async Task<IActionResult>historyTicketCheckInList(int nvsoatve_id)
+        public async Task<IActionResult>historyTicketCheckInList(int nvsoatve_id, string? datene, int type, int chuongtrinh_id)
         {
-            return Ok(await _soatveService.historyCheckInTicketList(nvsoatve_id));
+            return Ok(await _soatveService.historyCheckInTicketList(nvsoatve_id,datene,type,chuongtrinh_id));
         }
 
         [HttpGet("get_thongke_ticket_list")]

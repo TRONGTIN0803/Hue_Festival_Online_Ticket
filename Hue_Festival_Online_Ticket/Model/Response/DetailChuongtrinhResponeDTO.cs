@@ -9,5 +9,7 @@
         public string? diadiem_name { get; set; }
         public int? id_nhom { get; set; }
         public string? nhom_name { get; set; }
+        public int? id_doan { get; set; }
+        public string? doan_name { get; set; }
     }
 }
